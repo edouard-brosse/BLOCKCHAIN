@@ -1,0 +1,14 @@
+{
+    "name" : "crypto scripts luncher",
+    "private": true,
+    "version": "0.0.0",
+    "description": "crypto scripts luncher",
+    "type": "module",
+
+    "scripts" : {
+        "start All" : "./backend node server.js && ./frontcrypto npm run dev"
+    }, 
+    "dependencies": {
+        
+    }
+}
