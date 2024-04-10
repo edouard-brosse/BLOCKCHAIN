@@ -1,16 +1,75 @@
-// Importation des modules nécessaires
+// https://blockchain-bo3j.onrender.com 
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors'); // Ajout du module CORS
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const cors = require('cors');
 
-// Initialisation de l'application Express
 const app = express();
-const xrpl = require("xrpl")
-// Middleware pour analyser les corps des requêtes
-app.use(bodyParser.json());
+const PORT = process.env.PORT || 5000;
 
-// Middleware CORS pour permettre les requêtes depuis tous les origines
 app.use(cors());
+app.use(express.json());
+
+
+// MONGOOSE
+
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost:27017/nomDeVotreBaseDeDonnees', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("Connexion à MongoDB réussie !"))
+    .catch(() => console.log("Connexion à MongoDB échouée !"));
+
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+    // Ajoutez d'autres champs selon vos besoins
+});
+
+module.exports = mongoose.model('User', userSchema);
+  
+app.post('/register', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+      // Vérifier si l'utilisateur existe déjà
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+          return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
+      }
+
+      // Hacher le mot de passe et créer l'utilisateur
+      const newUser = new User({ email, password }); // Vous devriez hacher le mot de passe avant de le stocker
+      await newUser.save();
+
+      res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la création de l'utilisateur." });
+  }
+});
+
+app.get('/users', async (req, res) => {
+  // Ici, ajoutez une vérification de l'authentification et des autorisations
+  try {
+      const users = await User.find({}); // Renvoie tous les utilisateurs
+      res.json(users);
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs." });
+  }
+});
+
+app.get('/users', async (req, res) => {
+  // Ici, ajoutez une vérification de l'authentification et des autorisations
+  try {
+      const users = await User.find({}); // Renvoie tous les utilisateurs
+      res.json(users);
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs." });
+  }
+});
+/////////////////////////////////////////
+    
+// Simulez une base de données en mémoire
+const users = [];
 
 app.post('/firstco', (req, res) => {
     // Récupérer les données de la requête
@@ -24,79 +83,37 @@ app.post('/firstco', (req, res) => {
     res.status(200).json({ message: "Bonjour " + username });
 });
 
-// const client = new XRPL.Client('wss://s1.ripple.com');
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  console.log("try to login with email: ", email, " and password: ", password);
+  // Ici, vous devriez rechercher l'utilisateur dans votre base de données
+  const user = users.find((user) => user.email === email);
+  if (!user) {
+    return res.status(400).json({ message: 'Utilisateur non trouvé' });
+  }
 
-app.post('/tokenize', async (req, res) => {
-    // Récupérer les données de la requête
-    const assetData = req.body.assetData;
+  // Vérifiez le mot de passe - dans une application réelle, le hash du mot de passe devrait être stocké et comparé
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) {
+    return res.status(400).json({ message: 'Mot de passe incorrect' });
+  }
 
-    // try {
-    //     // Valider les données d'entrée (à remplacer par votre propre logique de validation)
-    //     if (!assetData || !assetData.assetName || !assetData.assetQuantity) {
-    //         throw new Error("Invalid asset data");
-    //     }
-
-    //     // Créer une transaction pour émettre des jetons
-    //     const transaction = XRPL.Transaction.makeCreateToken({
-    //         name: assetData.assetName,
-    //         quantity: assetData.assetQuantity
-    //     });
-
-    //     // Signer la transaction avec la clé privée appropriée
-    //     transaction.sign('<votre_clé_privée>');
-
-    //     // Envoyer la transaction au réseau XRPL
-    //     await client.sendTransaction(transaction);
-
-        // Réponse réussie
-        res.status(200).json({ message: "Tokenization successful" });
-    // } catch (error) {
-        // Gérer les erreurs et renvoyer une réponse d'erreur appropriée
-        // console.error("Tokenization failed:", error.message);
-        // res.status(500).json({ error: "Tokenization failed" });
-    // }
+  // Générer un token JWT pour l'utilisateur
+  const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  res.json({ message: 'Connexion réussie', token });
+  console.log("Connexion réussie");
 });
 
-// // Route pour émettre des jetons pour un actif réel
-// app.post('/tokenize', (req, res) => {
-//     // Récupérer les données de la requête
-//     const assetData = req.body.assetData;
-
-//     // Logique de tokenisation - à implémenter
-//     // Cette fonction devrait émettre des jetons sur le XRP Ledger pour représenter l'actif réel
-    
-//     // Réponse réussie
-//     res.status(200).json({ message: "Tokenization successful" });
-// });
-
-// Route pour gérer la propriété des jetons
-app.post('/manageOwnership', (req, res) => {
-    // Récupérer les données de la requête
-    const tokenData = req.body.tokenData;
-
-    // Logique de gestion de la propriété - à implémenter
-    // Cette fonction devrait gérer la propriété des jetons, comme les transferts de propriété
-
-    // Réponse réussie
-    res.status(200).json({ message: "Ownership managed successfully" });
+app.post('/register', async (req, res) => {
+  console.log("try to register with email: ", req.body.email, " and password ", req.body.password); 
+  const { email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = { email, password: hashedPassword };
+  users.push(newUser); // Dans une application réelle, vous devriez enregistrer l'utilisateur dans votre base de données
+  console.log(users);
+  res.status(201).json({ message: 'Utilisateur créé' });
+  console.log("Utilisateur créé");
 });
 
-// Route pour le transfert de jetons
-app.post('/transferToken', (req, res) => {
-    // Récupérer les données de la requête
-    const transferData = req.body.transferData;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-    // Logique de transfert de jetons - à implémenter
-    // Cette fonction devrait gérer le transfert de jetons entre les utilisateurs
-
-    // Réponse réussie
-    res.status(200).json({ message: "Token transferred successfully" });
-});
-
-// Port d'écoute du serveur
-const port = 3000;
-
-// Démarrer le serveur
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});

@@ -7,6 +7,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { BrowserRouter as Router, Link, Route, Routes} from 'react-router-dom';
 import { Text, Title } from '@mantine/core';
 import Home from './pages/home';
+import Register from './pages/Register';
+import ProfilePage from './pages/ProfilePage';
+import ProductsPage from './pages/ProductsPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 
 function App() {
   const [opened, { toggle }] = useDisclosure();
@@ -45,9 +50,29 @@ function App() {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <ScrollArea>
+          <ScrollArea>
             <div style={{ marginBottom: 10 }}>
-              <Link to="/">Home</Link>
+              <div>
+                <Link to="/">Home</Link>
+              </div>
+              <div>
+                <Link to="/register">Register</Link>
+              </div>
+              <div>
+                <Link to="/profile">Profile</Link>
+              </div>
+              <div>
+                <Link to="/ProductsPage">Products</Link>
+              </div>
+              <div>
+                <Link to="/CartPage">Cart</Link>
+              </div>
+              <div>
+                  <Link to="/CheckoutPage">Checkout</Link>
+              </div>
             </div>
+          </ScrollArea>
+
           </ScrollArea>
         </div>
 
@@ -56,6 +81,11 @@ function App() {
         <AppShell.Main>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="ProductsPage" element={<ProductsPage />} />
+            <Route path="CartPage" element={<CartPage />} />
+            <Route path="CheckoutPage" element={<CheckoutPage />} />
           </Routes>
         </AppShell.Main>
       </AppShell>

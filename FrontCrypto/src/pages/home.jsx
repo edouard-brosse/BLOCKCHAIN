@@ -35,8 +35,8 @@ export default function Home() {
 
     return (
         <div>
-            <h1>Home</h1>
-            <p>Welcome to the home page!</p>
+            <h1>Bienvenue sur notre plateforme de vêtements</h1>
+            <p>Découvrez nos dernières collections et offres spéciales.</p>
 
             <h2>Post to Server</h2>
             <p>Response: {responseData}</p>
@@ -54,30 +54,3 @@ export default function Home() {
         </div>
     );
 }
-
-
-// import { Button } from "@mantine/core";
-// import React, { useState, useEffect } from 'react';
-
-
-
-// export default function Home() {    
-//     const [data, setData] = useState([]);
-
-//     const GetServ = async () => {
-//         const response = await fetch('http://localhost:3000/manageOwnership');
-//         const Sdata = await response.json();
-//         console.log(Sdata);
-//         setData(Sdata);
-//     }
-//     return (
-//         <div>
-//             <h1>Home</h1>
-//             <p>Welcome to the home page!</p>
-
-//             <h2>Get From Serv</h2>
-//             <p>|{data}|</p>
-//             <Button onClick={GetServ}>Get Data</Button>
-//         </div>
-//     );
-// }
