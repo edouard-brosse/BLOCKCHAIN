@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
 // MONGOOSE
 
 const mongoose = require('mongoose');
@@ -67,7 +66,7 @@ app.get('/users', async (req, res) => {
   }
 });
 /////////////////////////////////////////
-    
+
 // Simulez une base de données en mémoire
 const users = [];
 
@@ -117,3 +116,21 @@ app.post('/register', async (req, res) => {
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// app.post('/register', async (req, res) => {
+//     const { email, password } = req.body;
+
+//     // Vérifier si l'utilisateur existe déjà
+//     const existingUser = users.find(user => user.email === email);
+//     if (existingUser) {
+//         return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
+//     }
+
+//     // Hacher le mot de passe avant de le stocker
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     // Créer un nouvel utilisateur (dans une application réelle, vous devriez sauvegarder cet utilisateur dans votre base de données)
+//     const newUser = { email, password: hashedPassword };
+//     users.push(newUser);
+
+//     res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
+// });

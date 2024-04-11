@@ -64,9 +64,12 @@ export default function Register() {
             placeholder='Confirm Password'
             onChange={(e) => setCheckPassword(e.target.value)}
           />
-          <Button disabled={password !== checkPassword} type="submit">{isRegistering ? 'Register' : 'Login'}</Button>
+          {/* <Button disabled={password !== checkPassword } type="submit">{isRegistering ? 'Register' : 'Login'}</Button> */}
+          <Button disabled={password === null || (password !== null && password !== checkPassword)} type="submit">
+            {isRegistering ? 'Register' : 'Login'}
+          </Button>
         </div> : 
-        <Button type="submit">{isRegistering ? 'Register' : 'Login'}</Button>      }
+        <Button disabled={password !== null} type="submit">{isRegistering ? 'Register' : 'Login'}</Button>      }
        
       </form>
       <Button onClick={() => setIsRegistering(!isRegistering)}>
