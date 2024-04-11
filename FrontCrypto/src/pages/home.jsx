@@ -1,5 +1,7 @@
 import { Button, TextInput } from "@mantine/core";
 import React, { useState } from 'react';
+// import { Redirect } from 'react-router-dom'; // Importer Redirect
+
 
 export default function Home() {    
     const [responseData, setResponseData] = useState('');
@@ -34,23 +36,48 @@ export default function Home() {
     };
 
     return (
-        <div>
+        //localStorage.getItem('token') == null ?
+        // <Redirect to="/login" />
+        //:
+          <div>
             <h1>Bienvenue sur notre plateforme de vêtements</h1>
             <p>Découvrez nos dernières collections et offres spéciales.</p>
-
+      
             <h2>Post to Server</h2>
             <p>Response: {responseData}</p>
             <TextInput
-                radius="md"
-                label="Input label"
-                description="Input description"
-                placeholder="Your name"
-                value={name}
-                onChange={(event) => setName(event.currentTarget.value)}
-                />
+              radius="md"
+              label="Input label"
+              description="Input description"
+              placeholder="Your name"
+              value={name}
+              onChange={(event) => setName(event.currentTarget.value)}
+            />
             <Button 
-                disabled={name === ''}
-                onClick={postRequest} >Send POST Request</Button>
-        </div>
-    );
-}
+              disabled={name === ''}
+              onClick={postRequest} >Send POST Request</Button>
+          </div>
+      );
+    }
+
+//     return (
+//         <div>
+//             <h1>Bienvenue sur notre plateforme de vêtements</h1>
+//             <p>Découvrez nos dernières collections et offres spéciales.</p>
+
+//             <h2>Post to Server</h2>
+//             <p>Response: {responseData}</p>
+//             <TextInput
+//                 radius="md"
+//                 label="Input label"
+//                 description="Input description"
+//                 placeholder="Your name"
+//                 value={name}
+//                 onChange={(event) => setName(event.currentTarget.value)}
+//                 />
+//             <Button 
+//                 disabled={name === ''}
+//                 onClick={postRequest} >Send POST Request</Button>
+//         </div>
+//     );
+// }

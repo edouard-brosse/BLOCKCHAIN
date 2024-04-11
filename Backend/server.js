@@ -164,5 +164,22 @@ app.get('/profile', verifyToken, async (req, res) => {
     }
 });
 
+app.get('/profile', verifyToken, async (req, res) => {
+  try {
+      // Utilisez req.userId défini par le middleware verifyToken pour trouver l'utilisateur
+      const user = await User.findById(req.userId).select('-password'); // Exclure le mot de passe des résultats
+
+      if (!user) {
+          return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      res.json({ email: user.email, walletAddress: user.walletAddress || 'Non définie' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la récupération des informations de l'utilisateur" });
+  }
+});
+
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
