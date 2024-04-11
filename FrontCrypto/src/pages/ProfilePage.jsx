@@ -1,7 +1,39 @@
 import React, { useState, useEffect } from 'react';
 
+import { useXRPL } from '../context/xrplcontext';
+
+import { Button, Text } from '@mantine/core';
+
+
 function ProfilePage() {
     const [walletAddress, setWalletAddress] = useState('');
+    const [user, setUser] = useState({ email: '', walletAddress: '' });
+
+    const { getWalletFromSeed, generateNewWallet, getNFTFromWallet, getBalanceFromWallet, mintNFT, burnNFT} = useXRPL();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const response = await fetch('http://localhost:5000/profile', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                },
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setUser(data);
+            } else {
+                console.error(data.message);
+                // Gérer les erreurs ici, par exemple en affichant un message à l'utilisateur
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
@@ -51,6 +83,16 @@ function ProfilePage() {
 
     return (
         <div>
+
+        <h1>Votre Profil</h1>
+        <p>Email: {user.email}</p>
+        <p>Adresse Wallet XRP: {user.walletAddress}</p>
+        {/* Conditionnellement afficher le bouton pour ajouter une adresse de wallet si elle n'est pas définie */}
+        {(!user.walletAddress || user.walletAddress === 'Non définie') && (
+            <button onClick={() => {/* Logique pour ajouter une adresse de wallet */}}>
+                Ajouter une adresse de Wallet XRP
+            </button>
+        )}
             <h1>Votre Profil</h1>
             <form onSubmit={handleUpdateProfile}>
                 <input
@@ -60,7 +102,22 @@ function ProfilePage() {
                     placeholder="Adresse du Wallet XRP"
                 />
                 <button type="submit">Mettre à jour le profil</button>
+              
             </form>
+            <div >
+                <Text>Adresse du Wallet XRP: {walletAddress}</Text>
+                <Text>localStorage: {localStorage.getItem('token')} | {localStorage.getItem('email')} </Text>
+                <Button onClick={(e) => {localStorage.clear()}}> unregister</Button>
+                <br />
+                <p>Email: {user.email}</p>
+                <p>Adresse Wallet XRP: {user.walletAddress}</p>
+                {/* Conditionnellement afficher le bouton pour ajouter une adresse de wallet si elle n'est pas définie */}
+                {(!user.walletAddress || user.walletAddress === 'Non définie') && (
+                <button onClick={() => {/* Logique pour ajouter une adresse de wallet */}}>
+                    Ajouter une adresse de Wallet XRP
+                </button>
+            )}
+            </div>
         </div>
     );
 }
