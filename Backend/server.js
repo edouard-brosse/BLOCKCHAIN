@@ -15,9 +15,9 @@ app.use(express.json());
 
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://zoroetlufy:Pepito1&@cluster0.xdapwkb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect(process.env.DB_URI)
     .then(() => console.log("Connexion à MongoDB réussie !"))
-    .catch(() => console.log("Connexion à MongoDB échouée !"));
+    .catch((err) => console.log("Connexion à MongoDB échouée !", err));
 
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
@@ -25,26 +25,11 @@ const userSchema = new mongoose.Schema({
     // Ajoutez d'autres champs selon vos besoins
 });
 
-module.exports = mongoose.model('User', userSchema);
-  
-app.post('/register', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-      // Vérifier si l'utilisateur existe déjà
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-          return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
-      }
+const User = mongoose.model('User', userSchema);
+module.exports = User;
 
-      // Hacher le mot de passe et créer l'utilisateur
-      const newUser = new User({ email, password }); // Vous devriez hacher le mot de passe avant de le stocker
-      await newUser.save();
 
-      res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
-  } catch (error) {
-      res.status(500).json({ message: "Erreur lors de la création de l'utilisateur." });
-  }
-});
+
 
 app.get('/users', async (req, res) => {
   // Ici, ajoutez une vérification de l'authentification et des autorisations
@@ -56,16 +41,7 @@ app.get('/users', async (req, res) => {
   }
 });
 
-app.get('/users', async (req, res) => {
-  // Ici, ajoutez une vérification de l'authentification et des autorisations
-  try {
-      const users = await User.find({}); // Renvoie tous les utilisateurs
-      res.json(users);
-  } catch (error) {
-      res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs." });
-  }
-});
-/////////////////////////////////////////
+
 
 // Simulez une base de données en mémoire
 const users = [];
@@ -104,15 +80,39 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  console.log("try to register with email: ", req.body.email, " and password ", req.body.password); 
   const { email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = { email, password: hashedPassword };
-  users.push(newUser); // Dans une application réelle, vous devriez enregistrer l'utilisateur dans votre base de données
-  console.log(users);
-  res.status(201).json({ message: 'Utilisateur créé' });
-  console.log("Utilisateur créé");
+
+  try {
+      // Vérifier si l'utilisateur existe déjà
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+          return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
+      }
+
+      // Hacher le mot de passe
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Créer et enregistrer le nouvel utilisateur
+      const newUser = new User({ email, password: hashedPassword });
+      await newUser.save();
+
+      res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la création de l'utilisateur." });
+  }
 });
+
+app.get('/users', async (req, res) => {
+  try {
+      const users = await User.find({});
+      res.json(users);
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs." });
+  }
+});
+
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
