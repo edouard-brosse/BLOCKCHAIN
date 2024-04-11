@@ -24,7 +24,7 @@ export default function Home() {
             };
     
             // Envoi de la requête POST
-            const response = await fetch('http://localhost:3000/firstco', requestOptions);
+            const response = await fetch('http://localhost:5000/firstco', requestOptions);
             const responseData = await response.json();
             console.log(responseData);
             setResponseData(responseData.message); // Afficher le message de la réponse
