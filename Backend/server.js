@@ -15,7 +15,7 @@ app.use(express.json());
 
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/nomDeVotreBaseDeDonnees', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://zoroetlufy:Pepito1&@cluster0.xdapwkb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
     .then(() => console.log("Connexion à MongoDB réussie !"))
     .catch(() => console.log("Connexion à MongoDB échouée !"));
 
