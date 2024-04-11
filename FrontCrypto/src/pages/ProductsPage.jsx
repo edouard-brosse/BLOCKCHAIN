@@ -5,6 +5,8 @@ function ProductsPage() {
   const { generateNewWallet } = useXRPL();
   useEffect(() => {
     const getWallet = async () => {
+        const wallet  = await generateNewWallet();
+        console.log("wallet =", wallet);
     };
     getWallet();
   }, []); 
