@@ -21,7 +21,9 @@ mongoose.connect(process.env.DB_URI)
 
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    walletAddress: { type: String, required: false, unique: true }
+
     // Ajoutez d'autres champs selon vos besoins
 });
 
@@ -60,23 +62,29 @@ app.post('/firstco', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log("try to login with email: ", email, " and password: ", password);
-  // Ici, vous devriez rechercher l'utilisateur dans votre base de données
-  const user = users.find((user) => user.email === email);
-  if (!user) {
-    return res.status(400).json({ message: 'Utilisateur non trouvé' });
-  }
 
-  // Vérifiez le mot de passe - dans une application réelle, le hash du mot de passe devrait être stocké et comparé
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) {
-    return res.status(400).json({ message: 'Mot de passe incorrect' });
-  }
+  try {
+      // Rechercher l'utilisateur dans la base de données
+      const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      }
 
-  // Générer un token JWT pour l'utilisateur
-  const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  res.json({ message: 'Connexion réussie', token });
-  console.log("Connexion réussie");
+      // Vérifier le mot de passe
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) {
+          return res.status(401).json({ message: 'Mot de passe incorrect' });
+      }
+
+      // Générer un token JWT pour l'utilisateur
+      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      // Répondre avec un message de succès et le token
+      res.json({ message: 'Connexion réussie', token });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la connexion de l'utilisateur." });
+  }
 });
 
 app.post('/register', async (req, res) => {
@@ -112,25 +120,29 @@ app.get('/users', async (req, res) => {
   }
 });
 
+app.post('/updateProfile', async (req, res) => {
+  // Supposons que vous avez une fonction d'authentification middleware qui décode le token JWT et ajoute un objet `user` à `req`
+  if (!req.user) {
+      return res.status(403).json({ message: "Non autorisé" });
+  }
+
+  const { walletAddress } = req.body;
+
+  try {
+      // Trouver l'utilisateur dans la base de données et mettre à jour son adresse de wallet
+      const updatedUser = await User.findByIdAndUpdate(req.user.id, { walletAddress }, { new: true });
+
+      if (!updatedUser) {
+          return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      res.json({ message: "Profil mis à jour avec succès", walletAddress: updatedUser.walletAddress });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour du profil" });
+  }
+});
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// app.post('/register', async (req, res) => {
-//     const { email, password } = req.body;
-
-//     // Vérifier si l'utilisateur existe déjà
-//     const existingUser = users.find(user => user.email === email);
-//     if (existingUser) {
-//         return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
-//     }
-
-//     // Hacher le mot de passe avant de le stocker
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     // Créer un nouvel utilisateur (dans une application réelle, vous devriez sauvegarder cet utilisateur dans votre base de données)
-//     const newUser = { email, password: hashedPassword };
-//     users.push(newUser);
-
-//     res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
-// });
