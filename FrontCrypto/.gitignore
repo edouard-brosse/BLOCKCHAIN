@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 # Ignore les fichiers et dossiers de node_modules
 /node_modules
+./BLOCKCHAIN/node_modules
+./FrontCrypto/node_modules
 
 # Ignore les fichiers de build générés
 /build
