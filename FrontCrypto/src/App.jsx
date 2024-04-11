@@ -56,7 +56,10 @@ function App() {
                 <Link to="/">Home</Link>
               </div>
               <div>
-                <Link to="/register">Register</Link>
+                {localStorage.getItem('token') !== null ? <Link to="/register">Register</Link> : <></>}
+                <div>
+                  <Link to="/register">DEBUG Register</Link>
+                </div>
               </div>
               <div>
                 <Link to="/profile">Profile</Link>

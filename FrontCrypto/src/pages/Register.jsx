@@ -23,7 +23,7 @@ export default function Register() {
     if (data.token) {
         // Enregistrer le token dans localStorage
         localStorage.setItem('token', data.token);
-
+        localStorage.setItem('email', email);
         // Redirection de l'utilisateur ou mise à jour de l'état de l'application après la connexion réussie
         console.log("Connexion réussie et token enregistré.");
     } else {
