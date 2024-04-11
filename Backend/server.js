@@ -15,6 +15,10 @@ app.use(express.json());
 
 const mongoose = require('mongoose');
 
+
+
+
+
 mongoose.connect(process.env.DB_URI)
     .then(() => console.log("Connexion à MongoDB réussie !"))
     .catch((err) => console.log("Connexion à MongoDB échouée !", err));
@@ -64,26 +68,19 @@ app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-      // Rechercher l'utilisateur dans la base de données
       const user = await User.findOne({ email });
-      if (!user) {
-          return res.status(404).json({ message: 'Utilisateur non trouvé' });
-      }
+      if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
-      // Vérifier le mot de passe
       const valid = await bcrypt.compare(password, user.password);
-      if (!valid) {
-          return res.status(401).json({ message: 'Mot de passe incorrect' });
-      }
+      if (!valid) return res.status(401).json({ message: "Mot de passe incorrect" });
 
-      // Générer un token JWT pour l'utilisateur
-      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-      // Répondre avec un message de succès et le token
-      res.json({ message: 'Connexion réussie', token });
+      // Générer un token JWT contenant l'ID de l'utilisateur
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      
+      res.json({ message: "Connexion réussie", token });
   } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Erreur lors de la connexion de l'utilisateur." });
+      res.status(500).json({ message: "Erreur lors de la connexion de l'utilisateur" });
   }
 });
 
@@ -120,17 +117,25 @@ app.get('/users', async (req, res) => {
   }
 });
 
-app.post('/updateProfile', async (req, res) => {
-  // Supposons que vous avez une fonction d'authentification middleware qui décode le token JWT et ajoute un objet `user` à `req`
-  if (!req.user) {
-      return res.status(403).json({ message: "Non autorisé" });
-  }
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
+  if (!token) return res.status(401).json({ message: "Accès refusé, token non fourni" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) return res.status(403).json({ message: "Token invalide" });
+      req.userId = decoded.id; // Assurez-vous que votre payload de token contient un champ 'id'
+      next();
+  });
+};
+
+app.post('/updateProfile', verifyToken, async (req, res) => {
   const { walletAddress } = req.body;
 
   try {
-      // Trouver l'utilisateur dans la base de données et mettre à jour son adresse de wallet
-      const updatedUser = await User.findByIdAndUpdate(req.user.id, { walletAddress }, { new: true });
+      // Mise à jour de l'utilisateur avec l'ID extrait du token JWT
+      const updatedUser = await User.findByIdAndUpdate(req.userId, { walletAddress }, { new: true });
 
       if (!updatedUser) {
           return res.status(404).json({ message: "Utilisateur non trouvé" });

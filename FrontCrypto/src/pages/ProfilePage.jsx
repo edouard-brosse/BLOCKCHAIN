@@ -5,12 +5,14 @@ function ProfilePage() {
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
+        const token = localStorage.getItem('token');
+        console.log("token = ", token);
         try {
             const response = await fetch('http://localhost:5000/updateProfile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'), // Supposons que le token JWT soit stocké dans localStorage
+                    'Authorization': 'Bearer ' + token, // Supposons que le token JWT soit stocké dans localStorage
                 },
                 body: JSON.stringify({ walletAddress }),
             });
