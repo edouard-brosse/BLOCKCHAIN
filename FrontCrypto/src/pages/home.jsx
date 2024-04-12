@@ -12,7 +12,7 @@ function Home() {
     useEffect(() => {
       const fetchFeeds = async () => {
         try {
-          const response = await fetch('http://localhost:5000/feeds');
+          const response = await fetch('https://back-express-project-8n22.vercel.app/feeds');
           const data = await response.json();
           if (response.ok) {
             setFeeds(data);
@@ -25,7 +25,7 @@ function Home() {
       };
 
       const fetchProfile = async () => {
-        const response = await fetch('http://localhost:5000/profile', {
+        const response = await fetch('https://back-express-project-8n22.vercel.app/profile', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ function Home() {
       const handleBuy = async (feedId) => {
         const buyerEmail = user.email;
         try {
-            const response = await fetch(`http://localhost:5000/buy-feed/${feedId}`, {
+            const response = await fetch(`https://back-express-project-8n22.vercel.app/buy-feed/${feedId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

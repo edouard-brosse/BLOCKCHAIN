@@ -12,7 +12,7 @@ function ProductsPage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const response = await fetch('http://localhost:5000/profile', {
+      const response = await fetch('https://back-express-project-8n22.vercel.app/profile', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ function ProductsPage() {
         const offerId = await createOffer(wallet, nftId, price);
 
         try {
-          const response = await fetch('http://localhost:5000/feed', {
+          const response = await fetch('https://back-express-project-8n22.vercel.app/feed', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',

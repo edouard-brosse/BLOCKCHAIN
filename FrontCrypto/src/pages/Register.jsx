@@ -10,7 +10,7 @@ export default function Register() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/login', {
+    const response = await fetch('https://back-express-project-8n22.vercel.app/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/register', {
+    const response = await fetch('https://back-express-project-8n22.vercel.app/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

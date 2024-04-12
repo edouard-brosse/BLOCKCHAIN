@@ -7,7 +7,7 @@ function CartPage() {
 
     useEffect(() => {
     const fetchProfileAndPurchases = async () => {
-        const profileResponse = await fetch('http://localhost:5000/profile', {
+        const profileResponse = await fetch('https://back-express-project-8n22.vercel.app/profile', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ function CartPage() {
 
             // Fetch purchases after we have the email
             if (profileData.email) {
-                const purchasesResponse = await fetch(`http://localhost:5000/user-purchases?email=${encodeURIComponent(profileData.email)}`, {
+                const purchasesResponse = await fetch(`https://back-express-project-8n22.vercel.app/user-purchases?email=${encodeURIComponent(profileData.email)}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     },

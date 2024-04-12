@@ -19,7 +19,7 @@ function ProfilePage() {
 
     useEffect(() => {
       const fetchProfile = async () => {
-          const response = await fetch('http://localhost:5000/profile', {
+          const response = await fetch('https://back-express-project-8n22.vercel.app/profile', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ function ProfilePage() {
   useEffect(() => {
     const fetchUserFeeds = async () => {
         const email = user.email;
-        const response = await fetch(`http://localhost:5000/user-feeds?email=${encodeURIComponent(email)}`, {
+        const response = await fetch(`https://back-express-project-8n22.vercel.app/user-feeds?email=${encodeURIComponent(email)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ function ProfilePage() {
     if (e) e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-        const response = await fetch('http://localhost:5000/updateProfile', {
+        const response = await fetch('https://back-express-project-8n22.vercel.app/updateProfile', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
