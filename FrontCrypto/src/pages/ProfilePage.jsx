@@ -99,7 +99,7 @@ function ProfilePage() {
         <div>
         <h1>Votre Profil</h1>
         <p>Email: {user.email}</p>
-        {(user.walletAddress) && (
+        {(user.walletAddress && user.walletAddress !== 'Non définie') && (
             <p>Solde du wallet {Balance} XRP</p>
         )}
         
