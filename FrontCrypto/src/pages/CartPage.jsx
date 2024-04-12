@@ -48,7 +48,7 @@ function CartPage() {
             {purchases.map((purchase, index) => (
                <Card key={index} shadow="sm" padding="lg">
                 
-                    <Text>Article: {purchase.name}</Text>
+                    <Text>Nom: {purchase.name}</Text>
                     <Text>Description: {purchase.description}</Text>
                     <Text>prix: {purchase.price} XRP</Text>
                 </Card>
