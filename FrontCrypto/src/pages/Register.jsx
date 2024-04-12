@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input } from '@mantine/core';
+import { Navigate } from 'react-router-dom';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -46,6 +47,9 @@ export default function Register() {
   };
 
   return (
+    localStorage.getItem('token') !== null ?
+      <Navigate  to="/" />
+    :
     <div className="App">
       <form onSubmit={isRegistering ? handleRegister : handleLogin}>
         <Input 
