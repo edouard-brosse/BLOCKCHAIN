@@ -45,12 +45,12 @@ const feedSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: String, required: true },
-    nftId: { type: String, required: true },  // Ajout de nftId
-    offerId: { type: String, required: true } // Ajout de offerId
+    nftId: { type: String, required: true },
+    offerId: { type: String, required: true },
+    isSold: { type: Boolean, required: true, default: false } // Ajout de la propriété isSold
   });
   
   const Feed = mongoose.model('Feed', feedSchema);
-  module.exports = Feed;
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
@@ -143,6 +143,34 @@ app.post('/feed', async (req, res) => {
     }
   });
 
+  app.get('/feeds', async (req, res) => {
+    try {
+      // Utiliser la condition { isSold: false } pour récupérer seulement les feeds non vendus
+      const feeds = await Feed.find({ isSold: false });
+      res.status(200).json(feeds);
+    } catch (error) {
+      console.error('Failed to retrieve available feeds:', error);
+      res.status(500).json({ message: 'Failed to retrieve available feeds', error });
+    }
+});
+
+  app.post('/buy-feed/:id', async (req, res) => {
+    const feedId = req.params.id;
+  
+    try {
+      // Recherche du feed et mise à jour de la propriété isSold
+      const updatedFeed = await Feed.findByIdAndUpdate(feedId, { $set: { isSold: true } }, { new: true });
+  
+      if (!updatedFeed) {
+        return res.status(404).json({ message: "Feed not found" });
+      }
+  
+      res.json({ message: "Feed marked as sold", feed: updatedFeed });
+    } catch (error) {
+      console.error('Failed to mark feed as sold:', error);
+      res.status(500).json({ message: 'Failed to mark feed as sold', error });
+    }
+  });
 
 app.get('/users', async (req, res) => {
   try {

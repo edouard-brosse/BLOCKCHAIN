@@ -40,12 +40,14 @@ function ProductsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nftId = await mintNFT(wallet, description);  // This should now return the NFT ID
-    console.log("nftId =", nftId);
-    console.log("nfTokenId =", nftId.result.meta.nftoken_id);
+    const nftResponse = await mintNFT(wallet, description);  // This should now return the complete NFT response
+    console.log("NFT Response =", nftResponse);
 
-    if (nftId) {
-        const offerId = await createOffer(wallet, nftId.result.meta.nftoken_id, price);
+    if (nftResponse && nftResponse.result && nftResponse.result.meta && nftResponse.result.meta.nftoken_id) {
+        const nftId = nftResponse.result.meta.nftoken_id;  // Extracting the NFToken ID
+        console.log("nftId =", nftId);
+
+        const offerId = await createOffer(wallet, nftId, price);
         console.log("offerId =", offerId);
 
         try {
