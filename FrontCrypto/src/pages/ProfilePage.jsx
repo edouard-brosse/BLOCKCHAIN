@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
+
 import { useXRPL } from '../context/xrplcontext';
 
-import { Button, Text } from '@mantine/core';
+import { Button, Text, Card } from '@mantine/core';
 
 
 function ProfilePage() {
@@ -10,6 +11,7 @@ function ProfilePage() {
     const [user, setUser] = useState({ email: '', walletAddress: '' });
     const [wallet, setWallet] = useState('');
     const [Balance, setBalance] = useState('');
+    const [feeds, setFeeds] = useState([]);
 
     const { getWalletFromSeed, generateNewWallet, getNFTFromWallet, getBalanceFromWallet, mintNFT, burnNFT} = useXRPL();
 
@@ -30,13 +32,11 @@ function ProfilePage() {
               try {
                   // Obtenir le wallet à partir de la seed
                   const wallet = await getWalletFromSeed(data.walletAddress);
-                  console.log("wallet = ", wallet);
                   setWallet(wallet);  // Mettre à jour l'état avec l'objet wallet
   
-                  // Obtenir le solde du wallet
+
                   if (wallet.address) {
                       const balance = await getBalanceFromWallet(wallet.address);
-                      console.log("balance = ", balance); // Log du solde, pourrait aussi être stocké dans l'état si nécessaire
                       setBalance(balance);
                   } else {
                       console.log("Aucune adresse valide trouvée pour le wallet.");
@@ -49,12 +49,36 @@ function ProfilePage() {
               setUser(data);  // Mettre à jour l'état avec les données utilisateur
           } else {
               console.error(data.message);
-              // Gérer les erreurs ici, par exemple en affichant un message à l'utilisateur
+
           }
       };
   
       fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const fetchUserFeeds = async () => {
+        const email = user.email;
+        const response = await fetch(`http://localhost:5000/user-feeds?email=${encodeURIComponent(email)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setFeeds(data);
+        } else {
+            console.error('Failed to fetch user feeds');
+        }
+    };
+
+    if (user.email) {
+        fetchUserFeeds();
+    }
+}, [user.email]);
   
 
 
@@ -76,13 +100,13 @@ function ProfilePage() {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token,
             },
-            body: JSON.stringify({ walletAddress }), // Utiliser directement walletAddress passée en paramètre
+            body: JSON.stringify({ walletAddress }),
         });
 
         const data = await response.json();
         console.log(data.message);
         
-        // Vérifiez si la réponse a été réussie avant de rafraîchir
+
         if (response.ok) {
             console.log("Profil mis à jour avec succès. Rechargement de la page...");
             window.location.reload();
@@ -99,11 +123,22 @@ function ProfilePage() {
         <div>
         <h1>Votre Profil</h1>
         <p>Email: {user.email}</p>
+        <h2>Vos Offres</h2>
+        {feeds.map(feed => (
+            <Card key={feed.id} shadow="sm" padding="lg">
+                
+            <Text>Article: {feed.name}</Text>
+            <Text>Description: {feed.description}</Text>
+            <Text>prix: {feed.price} XRP</Text>
+            <Text>Statut: {feed.isSold ? 'Vendu' : 'En vente'}</Text>
+            </Card>
+        ))}
         {(user.walletAddress && user.walletAddress !== 'Non définie') && (
             <p>Solde du wallet {Balance} XRP</p>
+            
         )}
         
-        {/* Conditionnellement afficher le bouton pour ajouter une adresse de wallet si elle n'est pas définie */}
+        
         {(!user.walletAddress || user.walletAddress === 'Non définie') && (
             <button onClick={async () => { await newWallet()}}>Generate new wallet</button>
         )}

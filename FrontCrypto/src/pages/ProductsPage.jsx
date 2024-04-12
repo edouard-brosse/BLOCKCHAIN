@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useXRPL } from '../context/xrplcontext';
-import { Button, TextInput, Textarea } from '@mantine/core'; // Supposons l'utilisation de Mantine pour les composants UI
+import { Button, TextInput, Textarea } from '@mantine/core';
 
 function ProductsPage() {
   const { getWalletFromSeed, generateNewWallet, getNFTFromWallet, getBalanceFromWallet, mintNFT, burnNFT, createOffer} = useXRPL();
@@ -24,14 +24,12 @@ function ProductsPage() {
       if (data.walletAddress) {
               // Obtenir le wallet à partir de la seed
               const wallett = await getWalletFromSeed(data.walletAddress);
-              console.log("wallet = ", wallett);
               setWallet(wallett);  // Mettre à jour l'état avec l'objet wallet
       }
       if (response.ok) {
           setUser(data);  // Mettre à jour l'état avec les données utilisateur
       } else {
           console.error(data.message);
-          // Gérer les erreurs ici, par exemple en affichant un message à l'utilisateur
       }
   };
 
@@ -40,22 +38,36 @@ function ProductsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nftResponse = await mintNFT(wallet, description);  // This should now return the complete NFT response
-    console.log("NFT Response =", nftResponse);
+
+    if (!user.email) {
+        console.error("User email is not loaded yet!");
+        return;
+    }
+
+    const nftResponse = await mintNFT(wallet, description);
 
     if (nftResponse && nftResponse.result && nftResponse.result.meta && nftResponse.result.meta.nftoken_id) {
-        const nftId = nftResponse.result.meta.nftoken_id;  // Extracting the NFToken ID
-        console.log("nftId =", nftId);
-
+        const nftId = nftResponse.result.meta.nftoken_id;
         const offerId = await createOffer(wallet, nftId, price);
-        console.log("offerId =", offerId);
 
         try {
-            const response = await fetch('http://localhost:5000/feed', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, price, nftId, offerId })
-            });
+          const response = await fetch('http://localhost:5000/feed', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            },
+            body: JSON.stringify({ 
+              name, 
+              description, 
+              price, 
+              nftId, 
+              offerId, 
+              creatorEmail: user.email,
+              isSold: false
+            })
+          });
+           
 
             const data = await response.json();
             if (response.ok) {

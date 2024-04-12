@@ -10,47 +10,6 @@ function Home() {
     const [Balance, setBalance] = useState('');
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            const response = await fetch('http://localhost:5000/profile', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                },
-            });
-    
-            const data = await response.json();
-            if (data.walletAddress) {
-                try {
-                    // Obtenir le wallet à partir de la seed
-                    const wallet = await getWalletFromSeed(data.walletAddress);
-                    console.log("wallet = ", wallet);
-                    setWallet(wallet);  // Mettre à jour l'état avec l'objet wallet
-    
-                    // Obtenir le solde du wallet
-                    if (wallet.address) {
-                        const balance = await getBalanceFromWallet(wallet.address);
-                        console.log("balance = ", balance); // Log du solde, pourrait aussi être stocké dans l'état si nécessaire
-                        setBalance(balance);
-                    } else {
-                        console.log("Aucune adresse valide trouvée pour le wallet.");
-                    }
-                } catch (error) {
-                    console.error("Erreur lors de la récupération du wallet ou du solde :", error);
-                }
-            }
-            if (response.ok) {
-                setUser(data);  // Mettre à jour l'état avec les données utilisateur
-            } else {
-                console.error(data.message);
-                // Gérer les erreurs ici, par exemple en affichant un message à l'utilisateur
-            }
-        };
-    
-        fetchProfile();
-    }, []);
-
-    useEffect(() => {
       const fetchFeeds = async () => {
         try {
           const response = await fetch('http://localhost:5000/feeds');
@@ -79,13 +38,12 @@ function Home() {
             try {
                 // Obtenir le wallet à partir de la seed
                 const wallet = await getWalletFromSeed(data.walletAddress);
-                console.log("wallet = ", wallet);
-                setWallet(wallet);  // Mettre à jour l'état avec l'objet wallet
+
+                setWallet(wallet);
             
                 // Obtenir le solde du wallet
                 if (wallet.address) {
                     const balance = await getBalanceFromWallet(wallet.address);
-                    console.log("balance = ", balance); // Log du solde, pourrait aussi être stocké dans l'état si nécessaire
                     setBalance(balance);
                 } else {
                     console.log("Aucune adresse valide trouvée pour le wallet.");
@@ -95,10 +53,10 @@ function Home() {
             }
         }
         if (response.ok) {
-            setUser(data);  // Mettre à jour l'état avec les données utilisateur
+            setUser(data);
         } else {
             console.error(data.message);
-            // Gérer les erreurs ici, par exemple en affichant un message à l'utilisateur
+
         }
     };
 
@@ -108,25 +66,29 @@ function Home() {
 
     }, []);
 
-    const handleBuy = async (feedId) => {
+      const handleBuy = async (feedId) => {
+        const buyerEmail = user.email;
         try {
-          const response = await fetch(`http://localhost:5000/buy-feed/${feedId}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + localStorage.getItem('token')
+            const response = await fetch(`http://localhost:5000/buy-feed/${feedId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ buyerEmail })
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                console.log('Offer purchased and marked as sold successfully:', data);
+
+            } else {
+                throw new Error(data.message);
             }
-          });
-      
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.message);
-          console.log('Purchase successful:', data);
-          // Mettre à jour l'état local pour refléter que l'article a été vendu
-          setFeeds(currentFeeds => currentFeeds.map(feed => feed._id === feedId ? { ...feed, isSold: true } : feed));
         } catch (error) {
-          console.error('Purchase failed:', error);
+            console.error('Failed to purchase offer:', error.message);
         }
-      };
+    };
 
     const BuyOffer = async (feed) => {
         if (!feed) {
@@ -134,7 +96,6 @@ function Home() {
             return;
         }
     
-        console.log("feed data = ", feed);
         if (!feed.offerId) {
             console.error("No offerId found in feed data");
             return;
@@ -160,21 +121,25 @@ function Home() {
             <Card.Section>
             </Card.Section>
             <Group position="apart" style={{ marginBottom: 5, marginTop: 5 }}>
-              <Text weight={500}>{feed.name}</Text>
-              <Text weight={500}>{feed.price} XRP</Text>
+              <Text weight={500}>Article: {feed.name}</Text>
+              <Text weight={500}> prix: {feed.price} XRP</Text>
             </Group>
             <Text size="sm" style={{ lineHeight: 1.5 }}>
-              {feed.description}
+              Description: {feed.description}
+
             </Text>
-            <Button 
-              variant="light" 
-              color="blue" 
-              fullWidth 
-              style={{ marginTop: 14 }} 
-              onClick={() => BuyOffer(feed)}  // Assurez-vous que feed est bien passé ici
-            >
-              Buy now
-            </Button>
+            {(user && feed && user.email !== feed.creatorEmail) && (
+                <Button
+                  variant="light"
+                  color="blue"
+                  fullWidth
+                  style={{ marginTop: 14 }}
+                  onClick={() => BuyOffer(feed)}
+                >
+                  Buy now
+                </Button>
+            )}
+            
           </Card>
         ))}
       </SimpleGrid>

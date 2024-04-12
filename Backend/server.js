@@ -47,11 +47,13 @@ const feedSchema = new mongoose.Schema({
     price: { type: String, required: true },
     nftId: { type: String, required: true },
     offerId: { type: String, required: true },
-    isSold: { type: Boolean, required: true, default: false } // Ajout de la propriété isSold
-  });
+    isSold: { type: Boolean, default: false }, // État de la vente
+    creatorEmail: { type: String, required: true },  // Assurez-vous que cette ligne est correcte
+    buyerEmail: { type: String, default: '' } // Ajouter ce champ pour enregistrer l'email de l'acheteur
+});
   
-  const Feed = mongoose.model('Feed', feedSchema);
-
+const Feed = mongoose.model('Feed', feedSchema);
+module.exports = Feed;
 const User = mongoose.model('User', userSchema);
 module.exports = User;
 
@@ -131,17 +133,30 @@ app.post('/register', async (req, res) => {
   console.log("end register email = ", email);
 });
 
-app.post('/feed', async (req, res) => {
-    const { name, description, price, nftId, offerId } = req.body;
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+  
+    if (!token) return res.status(401).json({ message: "Accès refusé, token non fourni" });
+  
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: "Token invalide" });
+        req.userId = decoded.id; // Assurez-vous que votre payload de token contient un champ 'id'
+        next();
+    });
+  };
+
+  app.post('/feed', async (req, res) => {
+    const { name, description, price, nftId, offerId, creatorEmail,  isSold} = req.body;
     try {
-      const product = new Feed({ name, description, price, nftId, offerId });
-      await product.save();
-      res.status(201).json({ message: 'Product added successfully', product });
+        const product = new Feed({ name, description, price, nftId, offerId, creatorEmail, isSold});
+        await product.save();
+        res.status(201).json({ message: 'Product added successfully', product });
     } catch (error) {
-      console.error('Failed to add product:', error);
-      res.status(500).json({ message: 'Failed to add product', error });
+        console.error('Failed to add product:', error);
+        res.status(500).json({ message: 'Failed to add product', error });
     }
-  });
+});
 
   app.get('/feeds', async (req, res) => {
     try {
@@ -154,23 +169,68 @@ app.post('/feed', async (req, res) => {
     }
 });
 
-  app.post('/buy-feed/:id', async (req, res) => {
-    const feedId = req.params.id;
-  
+app.post('/buy-feed/:feedId', async (req, res) => {
+    const { feedId } = req.params;
+    const buyerEmail = req.body.buyerEmail; // Assurez-vous que le frontend envoie l'email de l'acheteur
+
     try {
-      // Recherche du feed et mise à jour de la propriété isSold
-      const updatedFeed = await Feed.findByIdAndUpdate(feedId, { $set: { isSold: true } }, { new: true });
-  
-      if (!updatedFeed) {
-        return res.status(404).json({ message: "Feed not found" });
-      }
-  
-      res.json({ message: "Feed marked as sold", feed: updatedFeed });
+        // Trouver le feed et vérifier s'il a déjà été acheté
+        const feed = await Feed.findById(feedId);
+        if (!feed) {
+            return res.status(404).json({ message: 'Feed not found' });
+        }
+        if (feed.buyerEmail) {
+            return res.status(400).json({ message: 'This offer has already been purchased' });
+        }
+
+        // Marquer le feed comme vendu et enregistrer l'acheteur
+        feed.buyerEmail = buyerEmail;
+        feed.isSold = true; // Assurez-vous que votre schéma Feed a un champ isSold
+        await feed.save();
+
+        res.json({ message: 'Offer purchased and marked as sold successfully', feed });
     } catch (error) {
-      console.error('Failed to mark feed as sold:', error);
-      res.status(500).json({ message: 'Failed to mark feed as sold', error });
+        console.error('Failed to process the purchase:', error);
+        res.status(500).json({ message: 'Failed to process the purchase', error });
     }
-  });
+});
+
+app.get('/user-purchases', async (req, res) => {
+    const { email } = req.query; // Récupérer l'email depuis la chaîne de requête
+    try {
+        if (!email) {
+            return res.status(400).json({ message: "Email parameter is required." });
+        }
+        
+        const purchases = await Feed.find({ buyerEmail: email });
+        res.json(purchases);
+    } catch (error) {
+        console.error('Error fetching user purchases:', error);
+        res.status(500).json({ message: 'Error fetching user purchases', error });
+    }
+});
+
+app.get('/user-feeds', async (req, res) => {
+    const { email } = req.query; // Récupérer l'email depuis la chaîne de requête
+
+    if (!email) {
+        return res.status(400).json({ message: "Email parameter is required." });
+    }
+
+    try {
+        const feeds = await Feed.find({ creatorEmail: email });
+        res.json(feeds.map(feed => ({
+            id: feed._id,
+            name: feed.name,
+            description: feed.description,
+            price: feed.price,
+            isSold: feed.isSold
+        })));
+    } catch (error) {
+        console.error('Error fetching user feeds:', error);
+        res.status(500).json({ message: 'Error fetching user feeds', error });
+    }
+});
 
 app.get('/users', async (req, res) => {
   try {
@@ -181,18 +241,7 @@ app.get('/users', async (req, res) => {
   }
 });
 
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ message: "Accès refusé, token non fourni" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) return res.status(403).json({ message: "Token invalide" });
-      req.userId = decoded.id; // Assurez-vous que votre payload de token contient un champ 'id'
-      next();
-  });
-};
 
 app.post('/updateProfile', verifyToken, async (req, res) => {
   const { walletAddress } = req.body;
