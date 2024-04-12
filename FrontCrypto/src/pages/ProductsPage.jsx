@@ -42,16 +42,17 @@ function ProductsPage() {
     e.preventDefault();
     const nftId = await mintNFT(wallet, description);  // This should now return the NFT ID
     console.log("nftId =", nftId);
+    console.log("nfTokenId =", nftId.result.meta.nftoken_id);
 
     if (nftId) {
-        const offerId = await createOffer(wallet, nftId, price);
+        const offerId = await createOffer(wallet, nftId.result.meta.nftoken_id, price);
         console.log("offerId =", offerId);
 
         try {
             const response = await fetch('http://localhost:5000/feed', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, price, walletAddress: wallet.address, nftId, offerId })
+                body: JSON.stringify({ name, description, price, nftId, offerId })
             });
 
             const data = await response.json();
@@ -94,9 +95,6 @@ function ProductsPage() {
         />
         <Button type="submit">Put on Sale</Button>
       </form>
-
-      <h1>Products</h1>
-
     </div>
   );
 }

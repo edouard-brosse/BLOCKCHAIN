@@ -16,9 +16,7 @@ app.get('/', (req, res) => {
   });
   
   // Démarrage du serveur
-  app.listen(port, () => {
-    console.log("Serveur démarré sur http://localhost:${port}")
-  });
+
 
 
 // MONGOOSE
