@@ -89,7 +89,7 @@ app.post('/firstco', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
+    console.log("try login email = ", email);
   try {
       const user = await User.findOne({ email });
       if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
@@ -105,11 +105,12 @@ app.post('/login', async (req, res) => {
       console.error(error);
       res.status(500).json({ message: "Erreur lors de la connexion de l'utilisateur" });
   }
+  console.log("end login email = ", email);
 });
 
 app.post('/register', async (req, res) => {
   const { email, password } = req.body;
-
+    console.log("try register email = ", email);
   try {
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await User.findOne({ email });
@@ -129,6 +130,7 @@ app.post('/register', async (req, res) => {
       console.error(error);
       res.status(500).json({ message: "Erreur lors de la création de l'utilisateur." });
   }
+  console.log("end register email = ", email);
 });
 
 app.post('/feed', async (req, res) => {

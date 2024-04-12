@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import ProtectedRoute from './pages/ProtectedRoute';
 
 function App() {
   const [opened, { toggle }] = useDisclosure();
@@ -55,12 +56,7 @@ function App() {
               <div>
                 <Link to="/">Home</Link>
               </div>
-              <div>
-                {localStorage.getItem('token') !== null ? <Link to="/register">Register</Link> : <></>}
-                <div>
-                  <Link to="/register">DEBUG Register</Link>
-                </div>
-              </div>
+
               <div>
                 <Link to="/profile">Profile</Link>
               </div>
@@ -83,12 +79,30 @@ function App() {
 
         <AppShell.Main>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="ProductsPage" element={<ProductsPage />} />
-            <Route path="CartPage" element={<CartPage />} />
-            <Route path="CheckoutPage" element={<CheckoutPage />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>} />
+            <Route path="/register" element={
+              <Register />
+              } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+              } />
+            <Route path="ProductsPage" element={
+              <ProtectedRoute>
+                <ProductsPage />
+              </ProtectedRoute>} />
+            <Route path="CartPage" element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>} />
+            <Route path="CheckoutPage" element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>} />
           </Routes>
         </AppShell.Main>
       </AppShell>

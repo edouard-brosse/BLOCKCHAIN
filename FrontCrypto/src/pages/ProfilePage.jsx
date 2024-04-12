@@ -107,6 +107,14 @@ function ProfilePage() {
         {(!user.walletAddress || user.walletAddress === 'Non définie') && (
             <button onClick={async () => { await newWallet()}}>Generate new wallet</button>
         )}
+        <Button
+                    onClick={(e) => { localStorage.clear(); window.location.reload(); }}
+                    style={{ marginTop: 10 }}
+                    fullWidth
+                    color="red"
+                >
+                    Deconnection
+                </Button>
         </div>
     );
 }

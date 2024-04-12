@@ -1,7 +1,8 @@
 import { Button, TextInput } from "@mantine/core";
 import React, { useState } from 'react';
 // import { Redirect } from 'react-router-dom'; // Importer Redirect
-
+//import { BrowserRouter as Router, Route } from "react-router-dom";
+import { Navigate } from 'react-router-dom';
 
 export default function Home() {    
     const [responseData, setResponseData] = useState('');
@@ -36,9 +37,6 @@ export default function Home() {
     };
 
     return (
-        //localStorage.getItem('token') == null ?
-        // <Redirect to="/login" />
-        //:
           <div>
             <h1>Bienvenue sur notre plateforme de vêtements</h1>
             <p>Découvrez nos dernières collections et offres spéciales.</p>

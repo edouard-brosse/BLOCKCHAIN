@@ -94,6 +94,9 @@ function ProductsPage() {
         />
         <Button type="submit">Put on Sale</Button>
       </form>
+
+      <h1>Products</h1>
+
     </div>
   );
 }
