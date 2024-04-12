@@ -47,7 +47,7 @@ export const XRPLProvider = ({ children }) => {
         };
         const tsx = await xrplClient?.submitAndWait(transaction, { wallet: userWallet });
         console.log("result from nft transaction mint:", tsx);
-        return (tsx && tsx !== null ? true : false);
+        return (tsx);
     };
 
     const getNFTFromWallet = async (walletAddress) => { // nft possèdé

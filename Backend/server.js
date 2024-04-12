@@ -11,6 +11,16 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.send('Hello, World!'); // Renvoyer 'Hello, World!' lorsque la route '/' est accédée
+  });
+  
+  // Démarrage du serveur
+  app.listen(port, () => {
+    console.log("Serveur démarré sur http://localhost:${port}")
+  });
+
+
 // MONGOOSE
 
 const mongoose = require('mongoose');
@@ -30,6 +40,19 @@ const userSchema = new mongoose.Schema({
 
     // Ajoutez d'autres champs selon vos besoins
 });
+
+
+
+const feedSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    price: { type: String, required: true },
+    nftId: { type: String, required: true },  // Ajout de nftId
+    offerId: { type: String, required: true } // Ajout de offerId
+  });
+  
+  const Feed = mongoose.model('Feed', feedSchema);
+  module.exports = Feed;
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
@@ -107,6 +130,19 @@ app.post('/register', async (req, res) => {
       res.status(500).json({ message: "Erreur lors de la création de l'utilisateur." });
   }
 });
+
+app.post('/feed', async (req, res) => {
+    const { name, description, price, nftId, offerId } = req.body;
+    try {
+      const product = new Feed({ name, description, price, nftId, offerId });
+      await product.save();
+      res.status(201).json({ message: 'Product added successfully', product });
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      res.status(500).json({ message: 'Failed to add product', error });
+    }
+  });
+
 
 app.get('/users', async (req, res) => {
   try {
